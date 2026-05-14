@@ -605,6 +605,19 @@ divider()
 # ── Section 7: Үнэлгээний хэрэгсэл ─────────────────────────────
 section("🧮", "Байрны үнэ тооцоолох")
 
+st.markdown(f"""
+<div style="background:linear-gradient(135deg,#0f1a2e,#131f35);border:1px solid {BLUE}33;
+            border-radius:12px;padding:20px 24px;margin-bottom:24px;">
+  <div style="color:{TEXT};font-size:16px;font-weight:600;margin-bottom:6px">
+    🏡 Байр худалдаж авахаар төлөвлөж байна уу?
+  </div>
+  <div style="color:{MUTED};font-size:14px;line-height:1.7">
+    Та өөрийн сонирхсон байрны мэдээллийг оруулахад манай загвар
+    <b style="color:{TEXT}">зах зээлийн боломжит үнийг</b> тооцоолж өгнө.
+    Байрны байршил, хэмжээ, давхар зэрэг үзүүлэлтүүдийг оруулаад үнэлгээгээ мэдээрэй.
+  </div>
+</div>""", unsafe_allow_html=True)
+
 _давхар_утгууд = sorted(df["heden_dawhar"].dropna().unique(), key=lambda x: int(x) if str(x).isdigit() else 0)
 
 inp_vals = {}
