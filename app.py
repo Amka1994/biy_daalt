@@ -688,7 +688,14 @@ with form_col:
         _map_center = _дүүрэг_төв.get(_sel_duureg, (_UB_LAT, _UB_LON))
         _zoom = 11 if _sel_duureg in ("Налайх", "Багануур", "Багахангай") else 13
 
-        _fmap = folium.Map(location=list(_map_center), zoom_start=_zoom, tiles="CartoDB dark_matter")
+        _fmap = folium.Map(location=list(_map_center), zoom_start=_zoom, tiles=None)
+        folium.TileLayer("CartoDB positron", name="Цагаан зураг").add_to(_fmap)
+        folium.TileLayer(
+            tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            attr="Esri World Imagery",
+            name="Хиймэл дагуул",
+        ).add_to(_fmap)
+        folium.LayerControl(position="topright", collapsed=False).add_to(_fmap)
         folium.Marker(
             [_UB_LAT, _UB_LON],
             tooltip="Төв (Сүхбаатарын талбай)",
