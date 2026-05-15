@@ -667,7 +667,28 @@ with form_col:
         _clicked_lat = st.session_state.get("map_lat", _UB_LAT)
         _clicked_lon = st.session_state.get("map_lon", _UB_LON)
 
-        _fmap = folium.Map(location=[_UB_LAT, _UB_LON], zoom_start=13, tiles="CartoDB dark_matter")
+        _дүүрэг_төв = {
+            "Баянзүрх":        (47.9200, 106.9750),
+            "Сүхбаатар":       (47.9150, 106.9400),
+            "Хан-Уул":         (47.8800, 106.9050),
+            "Баянгол":         (47.9050, 106.8750),
+            "Чингэлтэй":       (47.9320, 106.9100),
+            "Налайх":          (47.7550, 107.2650),
+            "Багануур":        (47.7100, 108.2800),
+            "Багахангай":      (47.6300, 107.4000),
+            "Сонгинохайрхан":  (47.9050, 106.7900),
+        }
+        _sel_duureg = inp_vals.get("duureg", "")
+        if st.session_state.get("map_last_duureg") != _sel_duureg:
+            st.session_state.pop("map_lat", None)
+            st.session_state.pop("map_lon", None)
+            st.session_state["map_last_duureg"] = _sel_duureg
+            _clicked_lat = _UB_LAT
+            _clicked_lon = _UB_LON
+        _map_center = _дүүрэг_төв.get(_sel_duureg, (_UB_LAT, _UB_LON))
+        _zoom = 11 if _sel_duureg in ("Налайх", "Багануур", "Багахангай") else 13
+
+        _fmap = folium.Map(location=list(_map_center), zoom_start=_zoom, tiles="CartoDB dark_matter")
         folium.Marker(
             [_UB_LAT, _UB_LON],
             tooltip="Төв (Сүхбаатарын талбай)",
