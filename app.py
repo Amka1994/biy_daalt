@@ -127,7 +127,7 @@ df = load_data()
 
 # Улаанбаатарын төвөөс км зай (Haversine)
 import numpy as np
-_UB_LAT, _UB_LON = 47.9077, 106.9069
+_UB_LAT, _UB_LON = 47.9186, 106.9181
 def _haversine(lat, lon):
     R = 6371
     dlat = np.radians(lat - _UB_LAT)
