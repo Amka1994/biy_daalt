@@ -127,7 +127,7 @@ df = load_data()
 
 # Улаанбаатарын төвөөс км зай (Haversine)
 import numpy as np
-_UB_LAT, _UB_LON = 47.9065, 106.8832
+_UB_LAT, _UB_LON = 47.9077, 106.9069
 def _haversine(lat, lon):
     R = 6371
     dlat = np.radians(lat - _UB_LAT)
@@ -667,7 +667,7 @@ with form_col:
         _clicked_lat = st.session_state.get("map_lat", _UB_LAT)
         _clicked_lon = st.session_state.get("map_lon", _UB_LON)
 
-        _fmap = folium.Map(location=[_UB_LAT, _UB_LON], zoom_start=12, tiles="CartoDB dark_matter")
+        _fmap = folium.Map(location=[_UB_LAT, _UB_LON], zoom_start=13, tiles="CartoDB dark_matter")
         folium.Marker(
             [_UB_LAT, _UB_LON],
             tooltip="Төв (Сүхбаатарын талбай)",
