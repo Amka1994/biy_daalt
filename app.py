@@ -628,6 +628,9 @@ st.markdown(f"""
   </div>
 </div>""", unsafe_allow_html=True)
 
+from streamlit_folium import st_folium
+import folium
+
 _давхар_утгууд = sorted(df["heden_dawhar"].dropna().unique(), key=lambda x: int(x) if str(x).isdigit() else 0)
 
 inp_vals = {}
@@ -640,14 +643,13 @@ with form_col:
 
     st.markdown(f"<p style='color:{MUTED};font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin:16px 0 12px'>🏠 Байрны мэдээлэл</p>", unsafe_allow_html=True)
     fa, fb = st.columns(2)
-    num_inputs = [c for c in x_cols if c not in ("duureg", "horoolol")]
+    num_inputs = [c for c in x_cols if c not in ("duureg", "horoolol", "dist_km")]
     input_cfg = {
-        "hemjee":           ("📐 Талбай (м²)",        "number", 10.0,  500.0, 60.0),
-        "uruu_too":         ("🚪 Өрөөний тоо",         "select", [1,2,3,4,5,6], 1),
-        "ashiglalt_year":   ("📅 Ашиглалтын жил",      "number", 1960.0, 2025.0, 2010.0),
-        "barilgiin_dawhar": ("🏢 Барилгийн давхар",    "number", 2.0, 50.0, 9.0),
-        "heden_dawhar":     ("🔢 Хэдэн давхарт",       "select", _давхар_утгууд, 4),
-        "dist_km":          ("📏 Төвөөс зай (км)",     "number", 0.0, 30.0, 5.0),
+        "hemjee":           ("📐 Талбай (м²)",     "number", 10.0,   500.0, 60.0),
+        "uruu_too":         ("🚪 Өрөөний тоо",      "select", [1,2,3,4,5,6], 1),
+        "ashiglalt_year":   ("📅 Ашиглалтын жил",   "number", 1960.0, 2025.0, 2010.0),
+        "barilgiin_dawhar": ("🏢 Барилгийн давхар", "number", 2.0,   50.0,   9.0),
+        "heden_dawhar":     ("🔢 Хэдэн давхарт",    "select", _давхар_утгууд, 4),
     }
     for i, col in enumerate(num_inputs):
         cfg = input_cfg.get(col)
@@ -658,6 +660,50 @@ with form_col:
                 inp_vals[col] = st.number_input(cfg[0], min_value=float(cfg[2]), max_value=float(cfg[3]), value=float(cfg[4]), step=1.0, key=f"pred_{col}")
             elif cfg[1] == "select":
                 inp_vals[col] = st.selectbox(cfg[0], cfg[2], index=min(cfg[3], len(cfg[2])-1), key=f"pred_{col}")
+
+    if "dist_km" in x_cols:
+        st.markdown(f"<p style='color:{MUTED};font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin:16px 0 8px'>🗺️ Байрны байршил — газрын зурагт дарна уу</p>", unsafe_allow_html=True)
+
+        _clicked_lat = st.session_state.get("map_lat", _UB_LAT)
+        _clicked_lon = st.session_state.get("map_lon", _UB_LON)
+
+        _fmap = folium.Map(location=[_UB_LAT, _UB_LON], zoom_start=12, tiles="CartoDB dark_matter")
+        folium.Marker(
+            [_UB_LAT, _UB_LON],
+            tooltip="Төв (Сүхбаатарын талбай)",
+            icon=folium.Icon(color="red", icon="info-sign"),
+        ).add_to(_fmap)
+        if st.session_state.get("map_lat"):
+            folium.Marker(
+                [_clicked_lat, _clicked_lon],
+                tooltip=f"Сонгосон байршил — {_haversine(_clicked_lat, _clicked_lon):.2f} км",
+                icon=folium.Icon(color="blue", icon="home"),
+            ).add_to(_fmap)
+            folium.PolyLine(
+                [[_UB_LAT, _UB_LON], [_clicked_lat, _clicked_lon]],
+                color="#4f8ef7", weight=2, dash_array="6",
+            ).add_to(_fmap)
+
+        _map_data = st_folium(_fmap, height=280, use_container_width=True, key="pred_map")
+
+        if _map_data and _map_data.get("last_clicked"):
+            st.session_state["map_lat"] = _map_data["last_clicked"]["lat"]
+            st.session_state["map_lon"] = _map_data["last_clicked"]["lng"]
+            st.rerun()
+
+        if st.session_state.get("map_lat"):
+            _dist = float(_haversine(_clicked_lat, _clicked_lon))
+            inp_vals["dist_km"] = _dist
+            st.markdown(f"""
+<div style="background:#0f1a2e;border:1px solid {BLUE}44;border-radius:8px;
+            padding:10px 16px;margin-top:8px;display:flex;align-items:center;gap:12px">
+  <span style="font-size:20px">📏</span>
+  <span style="color:{MUTED};font-size:13px">Төвөөс зай:</span>
+  <span style="color:{BLUE};font-size:18px;font-weight:700">{_dist:.2f} км</span>
+</div>""", unsafe_allow_html=True)
+        else:
+            inp_vals["dist_km"] = 5.0
+            st.markdown(f"<p style='color:{MUTED};font-size:12px;margin-top:6px'>👆 Газрын зураг дээр байрны байршлыг дарж сонгоно уу</p>", unsafe_allow_html=True)
 
 # ── Үнэлгээ товч + үр дүн ──────────────────────────────────────
 import numpy as np

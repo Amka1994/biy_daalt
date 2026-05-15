@@ -5,3 +5,5 @@ scikit-learn
 xgboost
 scipy
 python-dotenv
+folium
+streamlit-folium
