@@ -467,14 +467,6 @@ divider()
 # ── Section 6: Регресс ───────────────────────────────────────────
 section("📉", "Регресс шинжилгээ")
 
-from sklearn.linear_model import Ridge
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.pipeline import make_pipeline
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import r2_score, mean_absolute_error
-from sklearn.model_selection import train_test_split, cross_val_score
-from xgboost import XGBRegressor
-
 reg_features = {
     "Талбай (м²)":          "hemjee",
     "Өрөөний тоо":          "uruu_too",
@@ -516,36 +508,54 @@ for col in x_cols:
 X = df_reg[x_cols].values
 y = df_reg["une"].values
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+@st.cache_data(show_spinner=False)
+def _train(model_name: str, cols_key: tuple, X: np.ndarray, y: np.ndarray):
+    from sklearn.linear_model import Ridge
+    from sklearn.preprocessing import PolynomialFeatures
+    from sklearn.pipeline import make_pipeline
+    from sklearn.ensemble import RandomForestRegressor
+    from sklearn.metrics import r2_score, mean_absolute_error
+    from sklearn.model_selection import train_test_split, cross_val_score
+    from xgboost import XGBRegressor
 
-if загвар_төрөл == "Шугаман (Linear)":
-    model = Ridge(alpha=1.0)
-elif загвар_төрөл == "Полином 2-р зэрэг":
-    model = make_pipeline(PolynomialFeatures(2, include_bias=False), Ridge(alpha=10.0))
-elif загвар_төрөл == "XGBoost":
-    model = XGBRegressor(
-        n_estimators=300, learning_rate=0.05, max_depth=5,
-        subsample=0.8, colsample_bytree=0.8,
-        reg_alpha=0.1, reg_lambda=1.0,
-        random_state=42, verbosity=0,
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    if model_name == "Шугаман (Linear)":
+        m = Ridge(alpha=1.0)
+    elif model_name == "Полином 2-р зэрэг":
+        m = make_pipeline(PolynomialFeatures(2, include_bias=False), Ridge(alpha=10.0))
+    elif model_name == "XGBoost":
+        m = XGBRegressor(
+            n_estimators=150, learning_rate=0.05, max_depth=5,
+            subsample=0.8, colsample_bytree=0.8,
+            reg_alpha=0.1, reg_lambda=1.0,
+            random_state=42, verbosity=0,
+        )
+    else:
+        m = RandomForestRegressor(
+            n_estimators=100, max_depth=15,
+            min_samples_leaf=5, max_features=0.8,
+            random_state=42,
+        )
+
+    m.fit(X_train, y_train)
+    y_pred_test  = m.predict(X_test)
+    y_pred_train = m.predict(X_train)
+    cv_scores    = cross_val_score(m, X, y, cv=5, scoring="r2")
+    return (
+        m,
+        y_test, y_pred_test, y_pred_train, y_train,
+        r2_score(y_test, y_pred_test),
+        r2_score(y_train, y_pred_train),
+        mean_absolute_error(y_test, y_pred_test),
+        cv_scores.mean(), cv_scores.std(),
     )
-else:
-    model = RandomForestRegressor(
-        n_estimators=200, max_depth=15,
-        min_samples_leaf=5, max_features=0.8,
-        random_state=42,
-    )
 
-model.fit(X_train, y_train)
-y_pred_test  = model.predict(X_test)
-y_pred_train = model.predict(X_train)
-
-r2_test  = r2_score(y_test, y_pred_test)
-r2_train = r2_score(y_train, y_pred_train)
-mae_test = mean_absolute_error(y_test, y_pred_test)
-
-cv_scores = cross_val_score(model, X, y, cv=5, scoring="r2")
-cv_mean, cv_std = cv_scores.mean(), cv_scores.std()
+(
+    model,
+    y_test, y_pred_test, y_pred_train, y_train,
+    r2_test, r2_train, mae_test, cv_mean, cv_std,
+) = _train(загвар_төрөл, tuple(x_cols), X, y)
 
 col_r1, col_r2 = st.columns([3, 1])
 
