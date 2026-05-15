@@ -649,29 +649,32 @@ with form_col:
             elif cfg[1] == "select":
                 inp_vals[col] = st.selectbox(cfg[0], cfg[2], index=min(cfg[3], len(cfg[2])-1), key=f"pred_{col}")
 
-# ── Тооцоолол ───────────────────────────────────────────────────
+# ── Үнэлгээ товч + үр дүн ──────────────────────────────────────
 import numpy as np
 
-row = []
-for col in x_cols:
-    val = inp_vals.get(col, 0)
-    if col in reg_encoders:
-        enc = reg_encoders[col]
-        val = enc.transform([str(val)])[0] if str(val) in enc.classes_ else 0
-    row.append(val)
-
-X_input       = np.array([row])
-predicted_une = model.predict(X_input)[0]
-inp_hemjee    = float(inp_vals.get("hemjee", 1) or 1)
-predicted_mkv = predicted_une / inp_hemjee
-inp_duureg_val = inp_vals.get("duureg", df["duureg"].iloc[0])
-
-# ── Үр дүн (баруун талд) ────────────────────────────────────────
 with result_col:
-    st.markdown(f"""
+    st.markdown("<div style='margin-top:36px'></div>", unsafe_allow_html=True)
+    тооцоол = st.button("🔍 Үнэлгээ тооцоолох", use_container_width=True, type="primary")
+
+    if тооцоол or st.session_state.get("pred_result"):
+        row = []
+        for col in x_cols:
+            val = inp_vals.get(col, 0)
+            if col in reg_encoders:
+                enc = reg_encoders[col]
+                val = enc.transform([str(val)])[0] if str(val) in enc.classes_ else 0
+            row.append(val)
+
+        X_input       = np.array([row])
+        predicted_une = model.predict(X_input)[0]
+        inp_hemjee    = float(inp_vals.get("hemjee", 1) or 1)
+        predicted_mkv = predicted_une / inp_hemjee
+        st.session_state["pred_result"] = True
+
+        st.markdown(f"""
 <div style="background:linear-gradient(160deg,#0c1a35,#111d38);
             border:1px solid {BLUE}55;border-radius:16px;
-            padding:36px 28px;margin-top:36px;text-align:center;
+            padding:36px 28px;margin-top:16px;text-align:center;
             box-shadow:0 8px 32px rgba(79,142,247,0.1);">
   <div style="color:{MUTED};font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px">
     Таамагласан үнэ
@@ -692,4 +695,10 @@ with result_col:
       <div style="color:{PURPLE};font-size:13px;font-weight:600">{загвар_төрөл}</div>
     </div>
   </div>
+</div>""", unsafe_allow_html=True)
+    else:
+        st.markdown(f"""
+<div style="background:{CARD};border:1px dashed {BORDER};border-radius:16px;
+            padding:36px 28px;margin-top:16px;text-align:center;">
+  <div style="color:{MUTED};font-size:14px">Мэдээллээ оруулаад<br>товч дарна уу</div>
 </div>""", unsafe_allow_html=True)
