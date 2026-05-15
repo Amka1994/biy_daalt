@@ -144,9 +144,9 @@ with st.sidebar:
     st.markdown(f"<h2 style='color:{TEXT};margin-bottom:20px'>🔍 Шүүлтүүр</h2>", unsafe_allow_html=True)
     st.markdown(f"<p style='color:{MUTED};font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px'>Дүүрэг</p>", unsafe_allow_html=True)
     sb1, sb2 = st.columns(2)
-    if sb1.button("Бүгд", use_container_width=True):
+    if sb1.button("Бүгд", width='stretch'):
         st.session_state["дүүрэг"] = бүх_дүүрэг
-    if sb2.button("Цуцлах", use_container_width=True):
+    if sb2.button("Цуцлах", width='stretch'):
         st.session_state["дүүрэг"] = []
     if "дүүрэг" not in st.session_state:
         st.session_state["дүүрэг"] = бүх_дүүрэг
@@ -216,7 +216,7 @@ with mc2:
 
 df_map = df_map[df_map["м2_үнэ_сая"].between(үнэ_min, үнэ_max)]
 
-fig_map = px.scatter_mapbox(
+fig_map = px.scatter_map(
     df_map,
     lat="latitude", lon="longitude",
     color="м2_үнэ_сая",
@@ -228,7 +228,7 @@ fig_map = px.scatter_mapbox(
     custom_data=["duureg", "horoolol", "м2_үнэ_сая", "нийт_үнэ_сая", "hemjee", "uruu_too"],
     zoom=11,
     center={"lat": 47.906, "lon": 106.883},
-    mapbox_style=map_style,
+    map_style=map_style,
     height=640,
 )
 fig_map.update_traces(
@@ -250,7 +250,7 @@ fig_map.update_layout(
     ),
     margin=dict(t=0, b=0, l=0, r=0),
 )
-st.plotly_chart(fig_map, use_container_width=True)
+st.plotly_chart(fig_map, width='stretch')
 
 divider()
 
@@ -295,7 +295,7 @@ with col_c1:
         legend=dict(orientation="h", y=1.08, bgcolor="rgba(0,0,0,0)"),
         bargap=0.2, bargroupgap=0.05,
     )
-    st.plotly_chart(fig_bar, use_container_width=True)
+    st.plotly_chart(fig_bar, width='stretch')
 
 with col_c2:
     for label, val, sub, color in [
@@ -338,7 +338,7 @@ with col_h1:
     fig_hist.update_traces(marker_line_width=0, opacity=0.85)
     fig_hist.update_xaxes(tickvals=[i*1e6 for i in range(0,25)], ticktext=[f"{i}сая" for i in range(0,25)])
     fig_hist.update_layout(**CHART_LAYOUT, yaxis_title="Зарын тоо", xaxis=dict(**AXIS), yaxis=dict(**AXIS))
-    st.plotly_chart(fig_hist, use_container_width=True)
+    st.plotly_chart(fig_hist, width='stretch')
 
 with col_h2:
     skew_label = "Баруун тийш өргөссөн" if skew > 0.5 else "Зүүн тийш өргөссөн" if skew < -0.5 else "Тэгш"
@@ -383,7 +383,7 @@ with col_a1:
     )
     fig_anova.update_yaxes(tickvals=[i*1e6 for i in range(0,25)], ticktext=[f"{i}сая" for i in range(0,25)])
     fig_anova.update_layout(**CHART_LAYOUT, xaxis=dict(**AXIS, tickangle=-40), yaxis=dict(**AXIS), showlegend=False)
-    st.plotly_chart(fig_anova, use_container_width=True)
+    st.plotly_chart(fig_anova, width='stretch')
 
 with col_a2:
     sig = p_value < 0.05
@@ -446,7 +446,7 @@ fig_heatmap.update_layout(
         tickfont=dict(color=TEXT),
     ),
 )
-st.plotly_chart(fig_heatmap, use_container_width=True)
+st.plotly_chart(fig_heatmap, width='stretch')
 
 corr_with_price = (
     corr_matrix["М² үнэ"].drop("М² үнэ").abs().sort_values(ascending=False)
@@ -571,7 +571,7 @@ with col_r1:
         yaxis=dict(**AXIS, title="Таамагласан үнэ (сая ₮)"),
         legend=dict(orientation="h", y=1.08, bgcolor="rgba(0,0,0,0)"),
     )
-    st.plotly_chart(fig_reg, use_container_width=True)
+    st.plotly_chart(fig_reg, width='stretch')
 
     st.markdown(f"""
 <div class="conclusion" style="border-left-color:{PURPLE}">
