@@ -706,10 +706,19 @@ with form_col:
             st.markdown(f"<p style='color:{MUTED};font-size:12px;margin-top:6px'>👆 Газрын зураг дээр байрны байршлыг дарж сонгоно уу</p>", unsafe_allow_html=True)
 
 # ── Үнэлгээ товч + үр дүн ──────────────────────────────────────
-import numpy as np
-
 with result_col:
-    st.markdown("<div style='margin-top:36px'></div>", unsafe_allow_html=True)
+    st.markdown(f"<p style='color:{MUTED};font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px'>⚙️ Тооцооллын загвар</p>", unsafe_allow_html=True)
+    pred_загвар = st.selectbox(
+        "Тооцооллын загвар",
+        ["Шугаман (Linear)", "Полином 2-р зэрэг", "XGBoost", "Random Forest"],
+        index=2,
+        key="pred_model_select",
+        label_visibility="collapsed",
+    )
+
+    with st.spinner("Загвар бэлдэж байна..."):
+        (pred_model, *_) = _train(pred_загвар, tuple(x_cols), X, y)
+
     тооцоол = st.button("🔍 Үнэлгээ тооцоолох", use_container_width=True, type="primary")
 
     if тооцоол or st.session_state.get("pred_result"):
@@ -722,7 +731,7 @@ with result_col:
             row.append(val)
 
         X_input       = np.array([row])
-        predicted_une = model.predict(X_input)[0]
+        predicted_une = pred_model.predict(X_input)[0]
         inp_hemjee    = float(inp_vals.get("hemjee", 1) or 1)
         predicted_mkv = predicted_une / inp_hemjee
         st.session_state["pred_result"] = True
@@ -748,7 +757,7 @@ with result_col:
     <div style="width:1px;background:{BORDER}"></div>
     <div>
       <div style="color:{MUTED};font-size:11px;margin-bottom:4px">Загвар</div>
-      <div style="color:{PURPLE};font-size:13px;font-weight:600">{загвар_төрөл}</div>
+      <div style="color:{PURPLE};font-size:13px;font-weight:600">{pred_загвар}</div>
     </div>
   </div>
 </div>""", unsafe_allow_html=True)
