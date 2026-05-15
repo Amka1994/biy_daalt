@@ -216,7 +216,7 @@ with mc2:
 
 df_map = df_map[df_map["м2_үнэ_сая"].between(үнэ_min, үнэ_max)]
 
-fig_map = px.scatter_map(
+fig_map = px.scatter_mapbox(
     df_map,
     lat="latitude", lon="longitude",
     color="м2_үнэ_сая",
@@ -228,7 +228,7 @@ fig_map = px.scatter_map(
     custom_data=["duureg", "horoolol", "м2_үнэ_сая", "нийт_үнэ_сая", "hemjee", "uruu_too"],
     zoom=11,
     center={"lat": 47.906, "lon": 106.883},
-    map_style=map_style,
+    mapbox_style=map_style,
     height=640,
 )
 fig_map.update_traces(
